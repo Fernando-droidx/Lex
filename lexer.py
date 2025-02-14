@@ -62,6 +62,12 @@ def t_IDENTIFIER(t):
     t.type = reserved.get(t.value, 'IDENTIFIER')  # Verificar si es palabra clave
     return t
 
+def t_INVALID_FLOAT(t):
+    r'\d+\.$'
+    print(
+        f"[Error Léxico] Literal numérico flotante mal formado '{t.value}' en la línea {t.lineno}, columna {t.lexpos}")
+    t.lexer.skip(len(t.value))  # Ignorar el token completo
+
 def t_FLOAT(t):
     r'\d+\.\d+'
     t.value = float(t.value)
@@ -72,6 +78,11 @@ def t_INTEGER(t):
     t.value = int(t.value)
     return t
 
+def t_UNTERMINATED_STRING(t):
+    r'"([^"\\]|\\.)*'
+    print(f"[Error Léxico] Cadena mal formada en la línea {t.lineno}, columna {t.lexpos}: No se cerraron las comillas.")
+    t.lexer.skip(len(t.value))  # Ignorar la cadena
+
 def t_STRING(t):
     r'"([^"\\]|\\.)*"'
     t.value = t.value[1:-1]  # Remover comillas
@@ -80,20 +91,19 @@ def t_STRING(t):
 # Comentarios
 def t_COMMENT(t):
     r'//.*|/\*[\s\S]*?\*/'
-    pass  # Ignorar comentarios
+    pass
 
-# Ignorar espacios y tabulaciones
 t_ignore = ' \t'
 
-# Ignorar nuevas líneas (pero contar las líneas para depuración)
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-# Manejo de errores
 def t_error(t):
     print(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno}")
     t.lexer.skip(1)
+
+
 
 # Construir el lexer
 lexer = lex.lex()
